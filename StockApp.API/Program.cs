@@ -1,5 +1,6 @@
 using StockApp.Infra.IoC;
 using StockApp.Infra.Data.Identity;
+using StockApp.API.Middleware;
 using StockApp.Domain.Interfaces;
 using StockApp.Infra.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -57,6 +58,7 @@ internal class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        app.UseErrorHandlerMiddleware();
 
         app.UseHttpsRedirection();
 
