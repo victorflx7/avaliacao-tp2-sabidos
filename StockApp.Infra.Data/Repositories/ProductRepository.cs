@@ -49,6 +49,13 @@ namespace StockApp.Infra.Data.Repositories
             await _productContext.SaveChangesAsync();
             return product;
         }
+        public async Task<IEnumerable<Product>> GetAllAsync(int pageNumber, int pageSize)
+        {
+            return await _productContext.Products
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
         public async Task<IEnumerable<Product>> GetFilteredAsync(string name, decimal? minPrice, decimal? maxPrice)
         {
             var query = _productContext.Products.AsQueryable();
