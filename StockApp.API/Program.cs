@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using StockApp.API.GraphQL; 
 using StockApp.API.Middleware;
 using StockApp.Application.Interfaces;
+
 using StockApp.Application.Services;
 using StockApp.Domain.Entities;
 using StockApp.Domain.Interfaces;
@@ -38,6 +39,7 @@ public class Program
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddSignalR();
 
+        builder.Services.AddScoped<IAuditService, AuditService>();
 
         var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtSeettigs:SecretKey"]);
         builder.Services.AddAuthentication(options =>
@@ -83,6 +85,7 @@ public class Program
 
         app.MapHub<StockHub>("/stockhub");
         app.UseHttpsRedirection();
+
 
         app.UseAuthorization();
 

@@ -13,8 +13,10 @@ namespace StockApp.API.Controllers
     public class ProductsController : Controller
     {
         private readonly IProductService _productService;
-
+        private readonly IAuditService _auditService;
         private readonly IHubContext<StockHub> _hubContext;
+
+        
         public ProductsController(IProductService productService,IAuditService auditService, IHubContext<StockHub> hubContext)
         {
             _productService = productService;
@@ -64,7 +66,7 @@ namespace StockApp.API.Controllers
                  return BadRequest("Data invalid");
              await _productService.Update(productDTO);
              
-            
+            await _auditService.AuditStockChange(productDTO.Id, productDTO.Stock, productDTO.Stock, DateTime.UtcNow);
             return Ok(productDTO);
         }
 
