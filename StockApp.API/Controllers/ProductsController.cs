@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using StockApp.Application.DTOs;
 using StockApp.Application.Interfaces;
 using StockApp.Application.Services;
 
+using StockApp.API.Hubs;
 
 namespace StockApp.API.Controllers
 {
@@ -11,9 +13,15 @@ namespace StockApp.API.Controllers
     public class ProductsController : Controller
     {
         private readonly IProductService _productService;
-         public ProductsController(IProductService productService)
+        private readonly IAuditService _auditService;
+        private readonly IHubContext<StockHub> _hubContext;
+
+        
+        public ProductsController(IProductService productService,IAuditService auditService, IHubContext<StockHub> hubContext)
         {
             _productService = productService;
+            _auditService = auditService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -57,7 +65,9 @@ namespace StockApp.API.Controllers
             if (productDTO == null)
                  return BadRequest("Data invalid");
              await _productService.Update(productDTO);
-             return Ok(productDTO);
+             
+            await _auditService.AuditStockChange(productDTO.Id, productDTO.Stock, productDTO.Stock, DateTime.UtcNow);
+            return Ok(productDTO);
         }
 
 
