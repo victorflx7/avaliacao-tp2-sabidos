@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using StockApp.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using StockApp.Application.Services;
 internal class Program
 {
     private static void Main(string[] args)
@@ -32,6 +33,7 @@ internal class Program
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IAuthService, AuthService>();
 
+        builder.Services.AddScoped<IAuditService, AuditService>();
 
         var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtSeettigs:SecretKey"]);
         builder.Services.AddAuthentication(options =>
@@ -72,6 +74,7 @@ internal class Program
         }
         app.UseErrorHandlerMiddleware();
         app.UseHttpsRedirection();
+
 
         app.UseAuthorization();
 

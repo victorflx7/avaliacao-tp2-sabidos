@@ -11,9 +11,12 @@ namespace StockApp.API.Controllers
     public class ProductsController : Controller
     {
         private readonly IProductService _productService;
-         public ProductsController(IProductService productService)
+        private readonly IAuditService _auditService;
+
+        public ProductsController(IProductService productService , IAuditService auditService)
         {
             _productService = productService;
+            _auditService = auditService;
         }
 
         [HttpGet]
@@ -57,7 +60,9 @@ namespace StockApp.API.Controllers
             if (productDTO == null)
                  return BadRequest("Data invalid");
              await _productService.Update(productDTO);
-             return Ok(productDTO);
+             
+            await _auditService.AuditStockChange(productDTO.Id, productDTO.Stock, productDTO.Stock, DateTime.UtcNow);
+            return Ok(productDTO);
         }
 
 
