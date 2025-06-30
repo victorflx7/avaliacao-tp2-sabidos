@@ -2,6 +2,7 @@
 using StockApp.Application.DTOs;
 using StockApp.Application.Interfaces;
 using StockApp.Application.Services;
+using StockApp.Domain.Interfaces;
 
 
 namespace StockApp.API.Controllers
@@ -11,9 +12,11 @@ namespace StockApp.API.Controllers
     public class ProductsController : Controller
     {
         private readonly IProductService _productService;
-         public ProductsController(IProductService productService)
+        private readonly IInventoryService _inventoryService;
+         public ProductsController(IProductService productService, IInventoryService inventoryService)
         {
             _productService = productService;
+            _inventoryService = inventoryService;
         }
 
         [HttpGet]
@@ -85,6 +88,12 @@ namespace StockApp.API.Controllers
             
                 await _productService.BulkUpdateAsync(productsDTO);
             return Ok(productsDTO);
+        }
+        [HttpPost("replenish")]
+        public async Task<IActionResult> ReplenishStock()
+        {
+            await _inventoryService.ReplenishStockAsync();
+            return Ok("Reposição Concluida!!!");
         }
     }
 }
