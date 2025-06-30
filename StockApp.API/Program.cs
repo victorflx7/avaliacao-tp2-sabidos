@@ -37,6 +37,15 @@ public class Program
         {
             options.AddPolicy("CanManageStock", policy => policy.Requirements.Add(new PermissionRequirement("CanManageStock")));
         });
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", builder =>
+            {
+                builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            });
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IAuthService, AuthService>();
@@ -121,6 +130,8 @@ public class Program
             app.UseSwaggerUI();
         }
         app.UseErrorHandlerMiddleware();
+
+        app.UseCors("AllowAll");
 
         app.MapHub<StockHub>("/stockhub");
         app.UseHttpsRedirection();
