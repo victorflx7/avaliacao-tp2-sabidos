@@ -41,7 +41,9 @@ public class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IMfaService, MfaService>();
         builder.Services.AddSignalR();
+
 
         builder.Services.AddScoped<IAuditService, AuditService>();
 
