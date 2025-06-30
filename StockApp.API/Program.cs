@@ -41,6 +41,7 @@ public class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
         builder.Services.AddScoped<IMfaService, MfaService>();
         builder.Services.AddSignalR();
 
