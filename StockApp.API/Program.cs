@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using StockApp.API.GraphQL; 
 using StockApp.API.Middleware;
 using StockApp.Application.Interfaces;
@@ -15,7 +16,6 @@ using System.Text;
 using StockApp.Infra.Data.Identity.Authorization;
 
 public class Program
-
 {
     public static void Main(string[] args)
     {
@@ -38,11 +38,34 @@ public class Program
             options.AddPolicy("CanManageStock", policy => policy.Requirements.Add(new PermissionRequirement("CanManageStock")));
         });
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IAuthService, AuthService>();
-        builder.Services.AddScoped<IMfaService, MfaService>();
-        builder.Services.AddSignalR();
+        builder.Services.AddScoped<IInventoryService, InventoryService>();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "StockApp.API", Version = "v1" });
+
+            var securitySchema = new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            };
+            c.AddSecurityDefinition("Bearer", securitySchema);
+            var securityRequeriment = new OpenApiSecurityRequirement
+        {
+            { securitySchema, new[] { "Bearer" } }
+        };
+            c.AddSecurityRequirement(securityRequeriment);
+        });
 
         builder.Services.AddHttpClient<IPricingService, PricingService>(client =>
         {
@@ -50,6 +73,9 @@ public class Program
         });
 
 
+        builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+        builder.Services.AddScoped<IMfaService, MfaService>();
+        builder.Services.AddSignalR();
         builder.Services.AddScoped<IAuditService, AuditService>();
 
         var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtSeettigs:SecretKey"]);
@@ -75,7 +101,9 @@ public class Program
         builder.Services.AddAuthorization(options =>
         {
             options.AddPolicy("CanManageProducts", policy =>
-                policy.Requirements.Add(new ClaimsAuthorizationRequirement("Permission", "CanManageProducts")));
+            policy.Requirements.Add(new
+            ClaimsAuthorizationRequirement("Permission", "CanManageProducts")));
+
         });
         builder.Services.AddSingleton<IAuthorizationHandler, ClaimsAuthorizationHandler>();
 
