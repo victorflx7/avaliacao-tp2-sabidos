@@ -14,12 +14,17 @@ using StockApp.API.Hubs;
 using StockApp.Infra.IoC;
 using System.Text;
 using StockApp.Infra.Data.Identity.Authorization;
+using Serilog;
 
 public class Program
 {
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateLogger();
+        builder.Host.UseSerilog();
 
         builder.Services.AddHttpClient<IErpIntegrationService, ErpIntegrationService>();
 
@@ -36,6 +41,15 @@ public class Program
         builder.Services.AddAuthorization(options =>
         {
             options.AddPolicy("CanManageStock", policy => policy.Requirements.Add(new PermissionRequirement("CanManageStock")));
+        });
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", builder =>
+            {
+                builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            });
         });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -65,9 +79,13 @@ public class Program
             { securitySchema, new[] { "Bearer" } }
         };
             c.AddSecurityRequirement(securityRequeriment);
-        }
+        });
 
-        );
+        builder.Services.AddHttpClient<IPricingService, PricingService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.pricing.com/");
+        });
+
 
         builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
         builder.Services.AddScoped<IMfaService, MfaService>();
@@ -110,6 +128,8 @@ public class Program
 
         var app = builder.Build();
 
+        app.UseSerilogRequestLogging();
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -117,6 +137,8 @@ public class Program
             app.UseSwaggerUI();
         }
         app.UseErrorHandlerMiddleware();
+
+        app.UseCors("AllowAll");
 
         app.MapHub<StockHub>("/stockhub");
         app.UseHttpsRedirection();
