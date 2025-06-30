@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using StockApp.API.GraphQL; 
 using StockApp.API.Middleware;
 using StockApp.Application.Interfaces;
-
 using StockApp.Application.Services;
 using StockApp.Domain.Entities;
 using StockApp.Domain.Interfaces;
@@ -13,8 +12,10 @@ using StockApp.Infra.Data.Repositories;
 using StockApp.API.Hubs;
 using StockApp.Infra.IoC;
 using System.Text;
+using StockApp.Infra.Data.Identity.Authorization;
 
 public class Program
+
 {
     public static void Main(string[] args)
     {
@@ -32,7 +33,10 @@ public class Program
         });
 
         builder.Services.AddControllers();
-
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("CanManageStock", policy => policy.Requirements.Add(new PermissionRequirement("CanManageStock")));
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
