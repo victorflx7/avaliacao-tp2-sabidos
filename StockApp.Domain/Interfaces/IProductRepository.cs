@@ -16,6 +16,7 @@ namespace StockApp.Domain.Interfaces
         Task<Product> Create(Product product);
         Task<Product> Update(Product product);
         Task<Product> Remove(Product product);
+        Task<IEnumerable<Product>> GetFilteredAsync(string name, decimal? minPrice, decimal? maxPrice);
 
     }
 }
