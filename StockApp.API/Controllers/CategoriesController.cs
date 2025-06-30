@@ -94,5 +94,12 @@ namespace StockApp.API.Controllers
             }
             return Ok(products);
         }
+
+        [HttpPost("sync-erp")]
+        public async Task<IActionResult> SyncErpData([FromServices] IErpIntegrationService erpService)
+        {
+            await erpService.SyncDataAsync();
+            return Ok("Sincronização com ERP concluída");
+        }
     }
 }

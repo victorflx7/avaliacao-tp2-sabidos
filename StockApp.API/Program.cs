@@ -8,12 +8,17 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using StockApp.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+
+using StockApp.Application.Interfaces;
+
 using StockApp.Application.Services;
 internal class Program
 {
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddHttpClient<IErpIntegrationService, ErpIntegrationService>();
 
         // Add services to the container.
         builder.Services.AddInfrastructureAPI(builder.Configuration);
