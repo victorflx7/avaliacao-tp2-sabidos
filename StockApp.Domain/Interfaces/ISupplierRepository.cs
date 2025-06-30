@@ -2,7 +2,7 @@
 
 namespace StockApp.Domain.Interfaces
 {
-    internal interface ISupplierRepository
+    public interface ISupplierRepository
     {
         Task<Supplier> GetByIdAsync(int id);
         Task<IEnumerable<Supplier>> GetAllAsync();
