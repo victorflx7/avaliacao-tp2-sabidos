@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using StockApp.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using StockApp.Infra.Data.Identity.Authorization;
 internal class Program
 {
     private static void Main(string[] args)
@@ -26,7 +27,10 @@ internal class Program
         });
 
         builder.Services.AddControllers();
-
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("CanManageStock", policy => policy.Requirements.Add(new PermissionRequirement("CanManageStock")));
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
