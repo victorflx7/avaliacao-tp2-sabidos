@@ -1,20 +1,22 @@
-using StockApp.API.Middleware;
-using StockApp.Infra.IoC;
-using StockApp.Infra.Data.Identity;
-using StockApp.Domain.Interfaces;
-using StockApp.Infra.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using StockApp.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
-
+using Microsoft.IdentityModel.Tokens;
+using StockApp.API.GraphQL; 
+using StockApp.API.Middleware;
 using StockApp.Application.Interfaces;
 
 using StockApp.Application.Services;
-internal class Program
+using StockApp.Domain.Entities;
+using StockApp.Domain.Interfaces;
+using StockApp.Infra.Data.Identity;
+using StockApp.Infra.Data.Repositories;
+using StockApp.API.Hubs;
+using StockApp.Infra.IoC;
+using System.Text;
+
+public class Program
 {
-    private static void Main(string[] args)
+    public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -23,11 +25,9 @@ internal class Program
         // Add services to the container.
         builder.Services.AddInfrastructureAPI(builder.Configuration);
 
-
         builder.Services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = builder.Configuration.GetConnectionString("Redis");
-
             options.InstanceName = "StockApp";
         });
 
@@ -37,6 +37,7 @@ internal class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddSignalR();
 
         builder.Services.AddScoped<IAuditService, AuditService>();
 
@@ -54,7 +55,7 @@ internal class Program
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = builder.Configuration["JwtSeettigs:Issuer "],
+                ValidIssuer = builder.Configuration["JwtSeettigs:Issuer"],
                 ValidAudience = builder.Configuration["JwtSeettigs:Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(key)
             };
@@ -63,11 +64,14 @@ internal class Program
         builder.Services.AddAuthorization(options =>
         {
             options.AddPolicy("CanManageProducts", policy =>
-            policy.Requirements.Add( new 
-            ClaimsAuthorizationRequirement("Permission", "CanManageProducts")));
+                policy.Requirements.Add(new ClaimsAuthorizationRequirement("Permission", "CanManageProducts")));
         });
-        builder.Services.AddSingleton<IAuthorizationHandler,
-            ClaimsAuthorizationHandler>();
+        builder.Services.AddSingleton<IAuthorizationHandler, ClaimsAuthorizationHandler>();
+
+        // Configuração do GraphQL
+        builder.Services.AddGraphQLServer()
+            .AddQueryType<Query>()
+            .AddMutationType<Mutation>();
 
         var app = builder.Build();
 
@@ -78,11 +82,14 @@ internal class Program
             app.UseSwaggerUI();
         }
         app.UseErrorHandlerMiddleware();
+
+        app.MapHub<StockHub>("/stockhub");
         app.UseHttpsRedirection();
 
 
         app.UseAuthorization();
 
+        app.MapGraphQL();
         app.MapControllers();
 
         app.Run();

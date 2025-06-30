@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using StockApp.Application.DTOs;
 using StockApp.Application.Interfaces;
 using StockApp.Application.Services;
 
+using StockApp.API.Hubs;
 
 namespace StockApp.API.Controllers
 {
@@ -12,11 +14,14 @@ namespace StockApp.API.Controllers
     {
         private readonly IProductService _productService;
         private readonly IAuditService _auditService;
+        private readonly IHubContext<StockHub> _hubContext;
 
-        public ProductsController(IProductService productService , IAuditService auditService)
+        
+        public ProductsController(IProductService productService,IAuditService auditService, IHubContext<StockHub> hubContext)
         {
             _productService = productService;
             _auditService = auditService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
