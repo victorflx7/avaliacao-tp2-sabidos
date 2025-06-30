@@ -65,9 +65,13 @@ public class Program
             { securitySchema, new[] { "Bearer" } }
         };
             c.AddSecurityRequirement(securityRequeriment);
-        }
+        });
 
-        );
+        builder.Services.AddHttpClient<IPricingService, PricingService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.pricing.com/");
+        });
+
 
         builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
         builder.Services.AddScoped<IMfaService, MfaService>();
