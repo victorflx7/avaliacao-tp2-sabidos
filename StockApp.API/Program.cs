@@ -1,15 +1,16 @@
-using StockApp.API.Middleware;
-using StockApp.Infra.IoC;
-using StockApp.Infra.Data.Identity;
-using StockApp.Domain.Interfaces;
-using StockApp.Infra.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using StockApp.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using StockApp.API.Middleware;
 using StockApp.Application.Interfaces;
 using StockApp.Application.Services;
+using StockApp.Domain.Entities;
+using StockApp.Domain.Interfaces;
+using StockApp.Infra.Data.Identity;
+using StockApp.Infra.Data.Repositories;
+using StockApp.Infra.IoC;
+using System.Text;
 internal class Program
 {
     private static void Main(string[] args)
@@ -32,9 +33,37 @@ internal class Program
         builder.Services.AddControllers();
 
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "StockApp.API", Version = "v1" });
+
+            var securitySchema = new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            };
+            c.AddSecurityDefinition("Bearer", securitySchema);
+            var securityRequeriment = new OpenApiSecurityRequirement
+        {
+            { securitySchema, new[] { "Bearer" } }
+        };
+            c.AddSecurityRequirement(securityRequeriment);
+        }
+
+        );
+
+
 
 
         var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtSeettigs:SecretKey"]);
@@ -60,7 +89,7 @@ internal class Program
         builder.Services.AddAuthorization(options =>
         {
             options.AddPolicy("CanManageProducts", policy =>
-            policy.Requirements.Add( new 
+            policy.Requirements.Add(new
             ClaimsAuthorizationRequirement("Permission", "CanManageProducts")));
         });
         builder.Services.AddSingleton<IAuthorizationHandler,
