@@ -40,6 +40,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IInventoryService, InventoryService>();
         builder.Services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "StockApp.API", Version = "v1" });
@@ -71,9 +72,6 @@ public class Program
         builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
         builder.Services.AddScoped<IMfaService, MfaService>();
         builder.Services.AddSignalR();
-
-
-
         builder.Services.AddScoped<IAuditService, AuditService>();
 
         var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtSeettigs:SecretKey"]);
