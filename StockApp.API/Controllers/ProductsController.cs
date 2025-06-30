@@ -6,6 +6,7 @@ using StockApp.Application.Services;
 using System.Text;
 
 using StockApp.API.Hubs;
+using StockApp.Domain.Entities;
 
 namespace StockApp.API.Controllers
 {
@@ -115,6 +116,15 @@ namespace StockApp.API.Controllers
                 csv.AppendLine($"{product.Id},{product.Name},{product.Description},{product.Price},{product.Stock}");
             }
             return File(Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", "products.csv");
+        }
+        [HttpGet("filtered")]
+        public async Task<ActionResult<IEnumerable<Product>>> GetFiltered(
+            [FromQuery] string name,
+            [FromQuery] decimal? minPrice,
+            [FromQuery] decimal? maxPrice)
+        {
+            var products = await _productService.GetFilteredAsync(name, minPrice, maxPrice);
+            return Ok(products);
         }
     }
 }
