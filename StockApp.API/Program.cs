@@ -44,6 +44,11 @@ public class Program
         builder.Services.AddScoped<IMfaService, MfaService>();
         builder.Services.AddSignalR();
 
+        builder.Services.AddHttpClient<IPricingService, PricingService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.pricing.com/");
+        });
+
 
         builder.Services.AddScoped<IAuditService, AuditService>();
 
