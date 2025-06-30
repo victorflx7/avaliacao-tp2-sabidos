@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using StockApp.Application.DTOs;
 using StockApp.Application.Interfaces;
 using StockApp.Application.Services;
+using System.Text;
 
 using StockApp.API.Hubs;
 
@@ -95,6 +96,25 @@ namespace StockApp.API.Controllers
             
                 await _productService.BulkUpdateAsync(productsDTO);
             return Ok(productsDTO);
+        }
+
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportToCsv()
+        {
+            var products = await _productService.GetProducts();
+            if (products == null || !products.Any())
+            {
+                return NotFound("Products not found to export");
+            }
+
+            var csv = new StringBuilder();
+            csv.AppendLine("Id,Name,Description,Price,Stock");
+
+            foreach (var product in products)
+            {
+                csv.AppendLine($"{product.Id},{product.Name},{product.Description},{product.Price},{product.Stock}");
+            }
+            return File(Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", "products.csv");
         }
     }
 }
