@@ -3,6 +3,7 @@ using StockApp.Infra.IoC;
 using StockApp.Infra.Data.Identity;
 using StockApp.Domain.Interfaces;
 using StockApp.Infra.Data.Repositories;
+using StockApp.API.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -31,7 +32,7 @@ internal class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IAuthService, AuthService>();
-
+        builder.Services.AddSignalR();
 
         var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtSeettigs:SecretKey"]);
         builder.Services.AddAuthentication(options =>
@@ -71,6 +72,8 @@ internal class Program
             app.UseSwaggerUI();
         }
         app.UseErrorHandlerMiddleware();
+
+        app.MapHub<StockHub>("/stockhub");
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
