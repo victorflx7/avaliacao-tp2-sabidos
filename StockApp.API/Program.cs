@@ -14,12 +14,17 @@ using StockApp.API.Hubs;
 using StockApp.Infra.IoC;
 using System.Text;
 using StockApp.Infra.Data.Identity.Authorization;
+using Serilog;
 
 public class Program
 {
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateLogger();
+        builder.Host.UseSerilog();
 
         builder.Services.AddHttpClient<IErpIntegrationService, ErpIntegrationService>();
 
@@ -122,6 +127,8 @@ public class Program
             .AddMutationType<Mutation>();
 
         var app = builder.Build();
+
+        app.UseSerilogRequestLogging();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
